@@ -1,0 +1,153 @@
+<html ng-app="gerenciadorFinanceiro">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Gerenciamento Financeiro</title>
+    <link rel="stylesheet" href="lib/googlemdl/material.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="lib/googlemdl/material.min.js"></script>
+    <script src="lib/angularjs/angular.js"></script>
+    <script src="lib/angularjs/angular-messages.js"></script>
+    <script src="js/app.js"></script>
+    <script src="lib/locale/locale.js"></script>
+    <script src="js/controllers/gerenciadorFinanceiroCtrl.js"></script>
+</head>
+<body ng-controller="gerenciadorFinanceiroCtrl">
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+            <i class="material-icons">attach_money</i><span class="mdl-layout-title">{{app}}</span>
+        </div>
+    </header>
+    <main class="mdl-layout__content">
+        <div class="page-content">
+            <div id="searchText" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" id="pesquisa" ng-model="searchText">
+                <label class="mdl-textfield__label" for="pesquisa">Pesquisar por...</label>
+            </div>
+
+            <table id="listagem" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                <tr>
+                    <th class="mdl-data-table__cell--non-numeric" ng-click="sortBy('descricao')">Descrição<span
+                            class="sortorder" ng-show="propertyName === 'descricao'"
+                            ng-class="{reverse: reverse}"></span></th>
+                    <th ng-click="sortBy('tipo')">Tipo<span class="sortorder" ng-show="propertyName === 'tipo'"
+                                                            ng-class="{reverse: reverse}"></span></th>
+                    <th ng-click="sortBy('valor')">Valor<span class="sortorder" ng-show="propertyName === 'valor'"
+                                                              ng-class="{reverse: reverse}"></span></th>
+                    <th>Ação</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <td>Total Depositado: {{getTotalDepositado() | currency}}</td>
+                    <td>Total Sacado: {{getTotalSacado() | currency}}</td>
+                    <td>Total Em Conta: {{getTotal() | currency}}</td>
+                    <td></td>
+                </tr>
+                </tfoot>
+                <tbody>
+                <tr ng-repeat="financeiro in controleFinanceiro | filter:searchText | orderBy:propertyName:reverse">
+                    <td class="mdl-data-table__cell--non-numeric">{{financeiro.descricao}}</td>
+                    <td>{{financeiro.tipo}}</td>
+                    <td>{{financeiro.valor | currency}}</td>
+                    <td>
+                        <button id="btnRemover" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored"
+                                ng-click="openModalRemoveItem($index)">
+                            <i class="material-icons">delete_forever</i>
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored"
+                    id="btnAdicionar" ng-click="openModalForAddItem()">
+                <i class="material-icons">add</i>
+            </button>
+            <div class="mdl-tooltip" data-mdl-for="btnAdicionar">
+                Inserir
+            </div>
+        </div>
+    </main>
+</div>
+
+<!--INICIO -  Modal Responsavel por adicionar os itens-->
+<dialog class="mdl-dialog">
+    <h4 class="mdl-dialog__title">Inserir</h4>
+    <div class="mdl-dialog__content">
+        <form id="formAddItemFinanceiro" name="formAddItemFinanceiro" action="#">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" id="descricao" maxlength="25" ng-required="true"
+                       ng-model="descricao">
+                <label class="mdl-textfield__label" for="descricao">Descrição</label>
+                <span class="mdl-textfield__error">Campo obrigatório!</span>
+            </div>
+
+            <table>
+                <tr>
+                    <td>Tipo</td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="mdl-radio mdl-js-radio" for="option1">
+                            <input type="radio" id="option1" name="tipo" class="mdl-radio__button" ng-model="tipo"
+                                   value="Saque">
+                            <span class="mdl-radio__label">Saque</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option2">
+                            <input type="radio" id="option2" name="tipo" class="mdl-radio__button" checked
+                                   ng-model="tipo" value="Depósito">
+                            <span class="mdl-radio__label">Depósito</span>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*(\,[0-9]+)?" id="valor"
+                       maxlength="12" ng-required="true" ng-model="valor">
+                <label class="mdl-textfield__label" for="valor">Valor</label>
+                <span class="mdl-textfield__error">O valor digitado não é do tipo númerico!</span>
+            </div>
+        </form>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button type="button"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                ng-click="addItemControleFinanceiro()" ng-disabled="formAddItemFinanceiro.$invalid">Confirmar
+        </button>
+        <button type="button" class="mdl-button close">Cancelar</button>
+    </div>
+</dialog>
+<!--FIM -  Modal Responsavel por adicionar os itens-->
+
+
+<!--INICIO -  Modal Responsavel por adicionar os itens-->
+<dialog id="dialogRemove" class="mdl-dialog">
+    <h4 class="mdl-dialog__title">Alerta!</h4>
+    <div class="mdl-dialog__content">
+        <input type="hidden" id="idHidden" name="idHidden" value=""/>
+        <p>Deseja realmente remover o item?</p>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button id="btnConfirmarRemover" type="button" ng-click="removeItem()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+            Confirmar
+        </button>
+        <button type="button" class="mdl-button close">Cancelar</button>
+    </div>
+</dialog>
+<!--FIM -  Modal Responsavel por adicionar os itens-->
+
+<!--Toast menssage-->
+<div id="mensagem" class="mdl-js-snackbar mdl-snackbar">
+    <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+</div>
+
+</body>
+</html>
+
